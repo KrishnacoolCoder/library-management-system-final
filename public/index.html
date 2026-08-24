@@ -1,0 +1,27 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Library Manager</title>
+<style>
+body{font-family:Inter,Arial,sans-serif;max-width:1100px;margin:35px auto;padding:0 20px;background:#f4f6f9;color:#182230}
+.card{background:#fff;padding:20px;border-radius:14px;margin:18px 0;box-shadow:0 3px 15px #0001}
+input,button{padding:10px;margin:4px;border:1px solid #d0d5dd;border-radius:8px}button{cursor:pointer}
+table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:10px;border-bottom:1px solid #eee}
+pre{background:#101828;color:#e4e7ec;padding:12px;border-radius:8px;overflow:auto}.muted{color:#667085}
+</style></head>
+<body>
+<h1>Library Management System</h1><p class="muted">OOP + DBMS + REST + JWT + MySQL</p>
+<div class="card"><h2>Login</h2>
+<input id="email" value="student@library.local"><input id="password" type="password" value="Password@123">
+<button onclick="login()">Login</button><a href="/api/docs" target="_blank">API Docs</a><pre id="out"></pre></div>
+<div class="card"><h2>Books</h2><input id="q" placeholder="Search"><button onclick="loadBooks()">Search</button>
+<table><thead><tr><th>Title</th><th>Author</th><th>Category</th><th>Available</th><th></th></tr></thead><tbody id="books"></tbody></table></div>
+<div class="card"><h2>My Loans</h2><button onclick="loadLoans()">Refresh</button><pre id="loans"></pre></div>
+<script>
+let token=localStorage.getItem("library_token")||"";
+async function api(url,opt={}){opt.headers={...(opt.headers||{}),"Content-Type":"application/json"};if(token)opt.headers.Authorization="Bearer "+token;let r=await fetch(url,opt),d=await r.json();if(!r.ok)throw Error(d.error||"Request failed");return d}
+async function login(){try{let d=await api("/api/auth/login",{method:"POST",body:JSON.stringify({email:email.value,password:password.value})});token=d.token;localStorage.setItem("library_token",token);out.textContent=JSON.stringify(d.user,null,2);loadBooks()}catch(e){out.textContent=e.message}}
+async function loadBooks(){try{let d=await api("/api/books?q="+encodeURIComponent(q.value));books.innerHTML=d.data.map(b=>`<tr><td>${b.title}</td><td>${b.author}</td><td>${b.category}</td><td>${b.available_copies}/${b.total_copies}</td><td><button onclick="borrow(${b.id})" ${b.available_copies?"":"disabled"}>Borrow</button></td></tr>`).join("")}catch(e){alert(e.message)}}
+async function borrow(id){try{await api("/api/loans/borrow",{method:"POST",body:JSON.stringify({bookId:id})});loadBooks();loadLoans()}catch(e){alert(e.message)}}
+async function loadLoans(){try{loans.textContent=JSON.stringify(await api("/api/loans/my"),null,2)}catch(e){loans.textContent=e.message}}
+if(token)loadBooks();
+</script></body></html>

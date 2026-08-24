@@ -1,0 +1,2 @@
+import {Router} from "express"; import {BookController} from "../controllers/BookController"; import {authenticate,authorize} from "../middleware/auth";
+export function bookRoutes(c:BookController){const r=Router();r.get("/",authenticate,c.list);r.get("/:id",authenticate,c.get);r.post("/",authenticate,authorize("ADMIN","LIBRARIAN"),c.create);r.put("/:id",authenticate,authorize("ADMIN","LIBRARIAN"),c.update);r.delete("/:id",authenticate,authorize("ADMIN"),c.delete);return r;}

@@ -1,0 +1,2 @@
+import {Router} from "express"; import {UserController} from "../controllers/UserController"; import {authenticate,authorize} from "../middleware/auth";
+export function userRoutes(c:UserController){const r=Router();r.get("/",authenticate,authorize("ADMIN"),c.list);r.patch("/:id/status",authenticate,authorize("ADMIN"),c.setStatus);r.get("/audit-logs",authenticate,authorize("ADMIN"),c.audits);return r;}

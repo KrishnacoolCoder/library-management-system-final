@@ -1,0 +1,2 @@
+import {Router} from "express"; import {LoanController} from "../controllers/LoanController"; import {authenticate,authorize} from "../middleware/auth";
+export function loanRoutes(c:LoanController){const r=Router();r.post("/borrow",authenticate,c.borrow);r.post("/:id/return",authenticate,c.returnBook);r.get("/my",authenticate,c.mine);r.get("/",authenticate,authorize("ADMIN","LIBRARIAN"),c.all);return r;}
